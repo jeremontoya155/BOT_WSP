@@ -4,3 +4,5 @@ queue.class.log
 baileys.log
 queue.class.log
 core.class.log
+.env
+/tmp    

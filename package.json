@@ -10,16 +10,22 @@
     },
     "keywords": [],
     "dependencies": {
+        "@adiwajshing/baileys": "^5.0.0",
         "@bot-whatsapp/bot": "latest",
         "@bot-whatsapp/cli": "latest",
         "@bot-whatsapp/database": "latest",
         "@bot-whatsapp/portal": "latest",
         "@bot-whatsapp/provider": "latest",
+        "@huggingface/inference": "^2.8.1",
         "@whiskeysockets/baileys": "6.5.0",
         "cache-manager": "5.2.4",
+        "dotenv": "^16.4.7",
         "fs": "^0.0.1-security",
+        "node-fetch": "^3.3.2",
+        "openai": "^3.3.0",
         "path": "^0.12.7",
-        "wa-sticker-formatter": "4.4.4"
+        "wa-sticker-formatter": "4.4.4",
+        "whisper": "^0.3.3"
     },
     "devDependencies": {
         "eslint": "^8.52.0",

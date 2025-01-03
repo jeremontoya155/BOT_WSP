@@ -6,81 +6,55 @@ const MockAdapter = require('@bot-whatsapp/database/mock')
 const path=require("path")
 const { readFile } = require('fs')
 const fs=require("fs")
+// const chat=requiere("./chat")
+require("dotenv")
+const {handlerAI}=require("./whisper")
 
 
 const menuPath=path.join(__dirname,"mensajes","menu.txt")
 const menu= fs.readFileSync(menuPath,"utf8")
 const flowSecundario = addKeyword(['2', 'siguiente']).addAnswer(['📄 Aquí tenemos el flujo secundario'])
 
-const flowDocs = addKeyword(['doc', 'documentacion', 'documentación']).addAnswer(
-    [
-        '📄 Aquí encontras las documentación recuerda que puedes mejorarla',
-        'https://bot-whatsapp.netlify.app/',
-        '\n*2* Para siguiente paso.',
-    ],
-    null,
-    null,
-    [flowSecundario]
-)
 
-const flowTuto = addKeyword(['tutorial', 'tuto']).addAnswer(
-    [
-        '🙌 Aquí encontras un ejemplo rapido',
-        'https://bot-whatsapp.netlify.app/docs/example/',
-        '\n*2* Para siguiente paso.',
-    ],
-    null,
-    null,
-    [flowSecundario]
-)
 
-const flowGracias = addKeyword(['gracias', 'grac']).addAnswer(
-    [
-        '🚀 Puedes aportar tu granito de arena a este proyecto',
-        '[*opencollective*] https://opencollective.com/bot-whatsapp',
-        '[*buymeacoffee*] https://www.buymeacoffee.com/leifermendez',
-        '[*patreon*] https://www.patreon.com/leifermendez',
-        '\n*2* Para siguiente paso.',
-    ],
-    null,
-    null,
-    [flowSecundario]
-)
+const flowVoice=addKeyword(EVENTS.VOICE_NOTE).addAnswer("Esto es una nota de voz",null,async(ctx,ctxFn)=>{
+    const text=await handlerAI(ctx)
+    console.log(text)
 
-const flowDiscord = addKeyword(['discord']).addAnswer(
-    ['🤪 Únete al discord', 'https://link.codigoencasa.com/DISCORD', '\n*2* Para siguiente paso.'],
-    null,
-    null,
-    [flowSecundario]
-)
+    
 
-const flowPrincipal = addKeyword(['hola', 'ole', 'alo'])
-    .addAnswer('🙌 Hola bienvenido a este *Chatbot*')
-    .addAnswer(
-        [
-            'te comparto los siguientes links de interes sobre el proyecto',
-            '👉 *doc* para ver la documentación',
-            '👉 *gracias*  para ver la lista de videos',
-            '👉 *discord* unirte al discord',
-        ],
-        null,
-        null,
-        [flowDocs, flowGracias, flowTuto, flowDiscord]
-    )
+})
 
+
+const flowMenu=addKeyword(EVENTS.ACTION)
+    .addAnswer("Gracias por elegirnos para cualquier informacion sobre nosotros le pedimos que revise nuestra red https://dlr.com.ar/empresa/")
+
+
+const flowRespuesta=addKeyword(EVENTS.ACTION)
+    .addAnswer("Este es el flow de respuestas")
+    .addAnswer("Hace tu consulta",{capture:true},async(ctx,ctxFn)=>{
+        const prompt="Responde Hola"
+        const consulta=ctx.Body
+       
+        console.log(consulta)   
+    })
+
+
+const flowAudio=addKeyword(EVENTS.ACTION)
+    .addAnswer("Este es el flow del Audios")
 
 const flowWelcome=addKeyword(EVENTS.WELCOME)
-    .addAnswer("Flujo Welcome",{
+    .addAnswer("Bienvenido",{
         delay:1000
     },
     async(ctx,ctxFn)=>{
-
-        if(ctx.body.includes("perro")){
+        
+        if(ctx.body.includes("?","¿")){
             
-        await ctxFn.flowDynamic("Este es el flow dinamico pero escribieron una palabra clave")}
+        await ctxFn.flowDynamic("Notamos que hizo una pregunta quiere escribir menu asi ingresa en la guia general?")}
         else{
             console.log(ctx.body)
-            await ctxFn.flowDynamic("Este es el flow dinamico")}
+            await ctxFn.flowDynamic("Le informamos que para continuar debe ingresar la plabara 'Menu'")}
         }
             
     
@@ -99,15 +73,11 @@ const flowWelcome=addKeyword(EVENTS.WELCOME)
     }
     switch (ctx.body) {
     case "1":
-    return await flowDynamic("menu1");
+    return gotoFlow(flowMenu);
     case "2":
-    return await flowDynamic("menu2");
+    return gotoFlow(flowRespuesta);
     case "3":
-    return await flowDynamic("menu3");
-    case "4":
-    return await flowDynamic("menu4");
-    case "5":
-    return await flowDynamic("menu5");
+    return gotoFlow(flowAudio);
     case "0":
     return await flowDynamic(
     "Saliendo... Puedes volver a acceder a este menú escribiendo '*Menu"
@@ -122,7 +92,7 @@ const flowWelcome=addKeyword(EVENTS.WELCOME)
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal,flowWelcome,menuFlow])
+    const adapterFlow = createFlow([flowWelcome,menuFlow,flowMenu,flowRespuesta,flowAudio,flowVoice])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
